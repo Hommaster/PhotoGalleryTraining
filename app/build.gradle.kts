@@ -53,6 +53,15 @@ dependencies {
     // Implementation for lifecycleViewModel
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    // Implementation for Retrofit
+    implementation(libs.retrofit2.retrofit)
+    implementation(libs.okhttp)
+
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.coroutines.android)
+
+    // Implementation for converter-scalars
+    implementation(libs.converter.scalars)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
