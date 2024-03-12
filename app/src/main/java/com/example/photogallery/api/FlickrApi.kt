@@ -2,7 +2,7 @@ package com.example.photogallery.api
 
 import retrofit2.http.GET
 
-private const val API_KEY = "59837b3eb8c4d576208f5d0b03b89317"
+private const val API_KEY = "--"
 
 interface FlickrApi {
     @GET(
