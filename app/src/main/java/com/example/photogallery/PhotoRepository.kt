@@ -11,13 +11,13 @@ class PhotoRepository {
 
     init {
         val retrofit: Retrofit = Retrofit.Builder()
-            .baseUrl("https://www.flickr.com/")
+            .baseUrl("https://api.flickr.com/")
             .addConverterFactory(ScalarsConverterFactory.create())
             .build()
 
         flickrApi = retrofit.create()
     }
 
-    suspend fun fetchContents() = flickrApi.fetchContents()
+    suspend fun fetchPhotos() = flickrApi.fetchPhotos()
 
 }
