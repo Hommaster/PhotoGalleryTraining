@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
+    alias(libs.plugins.googleDevtoolsKsp)
 }
 
 android {
@@ -60,8 +61,13 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
 
-    // Implementation for converter-scalars
-    implementation(libs.converter.scalars)
+    // Implementation for converter-Moshi
+    implementation(libs.moshi)
+    ksp(libs.moshi.kotlin.codegen)
+    implementation(libs.converter.moshi)
+
+    // Implementation for KSP
+    ksp(libs.androidx.room.compiler)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
