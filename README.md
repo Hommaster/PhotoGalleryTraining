@@ -3,3 +3,4 @@ Fragment
 RecyclerView
 ViewModels
 ViewBinding
+Coil

@@ -69,6 +69,8 @@ dependencies {
     // Implementation for KSP
     ksp(libs.androidx.room.compiler)
 
+    implementation(libs.coil)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

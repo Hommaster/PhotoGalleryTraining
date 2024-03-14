@@ -1,17 +1,21 @@
 package com.example.photogallery
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.photogallery.databinding.FragmentPhotoGalleryBinding
 import kotlinx.coroutines.launch
 
 class PhotoGalleryFragment : Fragment() {
+
+    private val photoGalleryViewModel: PhotoGalleryViewModel by viewModels()
 
     private var _binding : FragmentPhotoGalleryBinding? = null
     private val binding
@@ -33,13 +37,13 @@ class PhotoGalleryFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         viewLifecycleOwner.lifecycleScope.launch {
-            try {
-                val response = PhotoRepository().fetchPhotos()
-                Log.d("PhotoGalleryFragment", response.toString())
-            } catch (
-
-            )
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                photoGalleryViewModel.galleryItems.collect() {items ->
+                   binding.photoGrid.adapter = PhotoListAdapter(items)
+                }
+            }
         }
+
     }
 
     override fun onDestroy() {
