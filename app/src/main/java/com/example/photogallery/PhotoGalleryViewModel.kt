@@ -11,6 +11,8 @@ import kotlinx.coroutines.launch
 
 class PhotoGalleryViewModel : ViewModel() {
 
+    private val photoRepository = PhotoRepository()
+
     private val _galleryItems: MutableStateFlow<List<GalleryItem>> =
         MutableStateFlow(emptyList())
     val galleryItems: StateFlow<List<GalleryItem>>
@@ -19,8 +21,7 @@ class PhotoGalleryViewModel : ViewModel() {
     init {
         viewModelScope.launch {
             try {
-                val items = PhotoRepository().fetchPhotos()
-                Log.d("PhotoGalleryViewModel", items.toString())
+                val items = photoRepository.searchPhotos("anime")
                 _galleryItems.value = items
             } catch (ex:Exception) {
                 Log.e("PGViewModel", "Failed loading", ex)

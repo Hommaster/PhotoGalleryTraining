@@ -63,6 +63,8 @@ dependencies {
 
     // Implementation for converter-Moshi
     implementation(libs.moshi)
+    implementation(libs.androidx.navigation.fragment.ktx)
+    implementation(libs.androidx.navigation.ui.ktx)
     ksp(libs.moshi.kotlin.codegen)
     implementation(libs.converter.moshi)
 

@@ -2,8 +2,13 @@ package com.example.photogallery
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -13,7 +18,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.example.photogallery.databinding.FragmentPhotoGalleryBinding
 import kotlinx.coroutines.launch
 
-class PhotoGalleryFragment : Fragment() {
+class PhotoGalleryFragment : Fragment(), MenuProvider {
 
     private val photoGalleryViewModel: PhotoGalleryViewModel by viewModels()
 
@@ -22,6 +27,21 @@ class PhotoGalleryFragment : Fragment() {
         get() = checkNotNull(_binding) {
             "Cannot access binding because is it null. It the view visible?"
         }
+
+    // need add menuHost in onViewCreated
+    // in Manifest themes need AppTheme
+    // AppTheme need create in style.xml
+    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+        menuInflater.inflate(R.menu.fragment_photo_gallery, menu)
+    }
+
+    override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+        return when(menuItem.itemId) {
+            R.id.menu_item_search -> {
+                true
+            } else -> false
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -35,6 +55,10 @@ class PhotoGalleryFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // Add menu host for create menu
+        val menuHost: MenuHost = requireActivity()
+        menuHost.addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
