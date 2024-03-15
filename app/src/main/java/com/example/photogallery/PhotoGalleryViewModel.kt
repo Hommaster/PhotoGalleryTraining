@@ -21,11 +21,25 @@ class PhotoGalleryViewModel : ViewModel() {
     init {
         viewModelScope.launch {
             try {
-                val items = photoRepository.searchPhotos("anime")
+                val items = searchPhotosQuery("anime")
                 _galleryItems.value = items
             } catch (ex:Exception) {
                 Log.e("PGViewModel", "Failed loading", ex)
             }
+        }
+    }
+
+    fun setQuery(query: String) {
+        viewModelScope.launch {
+            _galleryItems.value = searchPhotosQuery(query)
+        }
+    }
+
+    private suspend fun searchPhotosQuery(query : String): List<GalleryItem> {
+        return if(query.isNotEmpty()) {
+            photoRepository.searchPhotos(query)
+        } else {
+            photoRepository.fetchPhotos()
         }
     }
 

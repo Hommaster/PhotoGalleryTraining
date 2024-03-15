@@ -7,6 +7,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.widget.SearchView
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
@@ -33,6 +34,21 @@ class PhotoGalleryFragment : Fragment(), MenuProvider {
     // AppTheme need create in style.xml
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
         menuInflater.inflate(R.menu.fragment_photo_gallery, menu)
+
+        val searchItem = menu.findItem(R.id.menu_item_search)
+        val searchView = searchItem.actionView as? SearchView
+
+        searchView?.setOnQueryTextListener(object: SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                photoGalleryViewModel.setQuery(query ?: "")
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                return false
+            }
+        })
+
     }
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
