@@ -4,14 +4,18 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.photogallery.api.GalleryItem
+import com.example.photogallery.repository.PreferencesRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class PhotoGalleryViewModel : ViewModel() {
 
     private val photoRepository = PhotoRepository()
+
+    private val preferencesRepository = PreferencesRepository.get()
 
     private val _galleryItems: MutableStateFlow<List<GalleryItem>> =
         MutableStateFlow(emptyList())
@@ -20,18 +24,20 @@ class PhotoGalleryViewModel : ViewModel() {
 
     init {
         viewModelScope.launch {
-            try {
-                val items = searchPhotosQuery("anime")
-                _galleryItems.value = items
-            } catch (ex:Exception) {
-                Log.e("PGViewModel", "Failed loading", ex)
+            preferencesRepository.storedQuery.collectLatest { storedQuery ->
+                try {
+                    val items = searchPhotosQuery(storedQuery)
+                    _galleryItems.value = items
+                } catch (ex:Exception) {
+                    Log.e("PGViewModel", "Failed loading", ex)
+                }
             }
         }
     }
 
     fun setQuery(query: String) {
         viewModelScope.launch {
-            _galleryItems.value = searchPhotosQuery(query)
+            preferencesRepository.setStoredQuery(query)
         }
     }
 

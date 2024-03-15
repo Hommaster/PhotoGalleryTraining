@@ -6,6 +6,7 @@
 
     <application
         android:allowBackup="true"
+        android:name=".PhotoGalleryApplication"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@drawable/modal_generated_image__5_"

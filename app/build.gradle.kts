@@ -71,7 +71,11 @@ dependencies {
     // Implementation for KSP
     ksp(libs.androidx.room.compiler)
 
+    // coil for load photo from uri-address
     implementation(libs.coil)
+
+    // datastore for simple persistence
+    implementation(libs.datastore)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
