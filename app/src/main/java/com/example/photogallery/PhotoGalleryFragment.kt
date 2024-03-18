@@ -1,5 +1,7 @@
 package com.example.photogallery
 
+import android.app.ProgressDialog
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -7,7 +9,10 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
+import android.widget.ProgressBar
 import androidx.appcompat.widget.SearchView
+import androidx.core.content.getSystemService
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
@@ -23,6 +28,8 @@ class PhotoGalleryFragment : Fragment(), MenuProvider {
 
     private val photoGalleryViewModel: PhotoGalleryViewModel by viewModels()
 
+    private var searchView: SearchView? = null
+
     private var _binding : FragmentPhotoGalleryBinding? = null
     private val binding
         get() = checkNotNull(_binding) {
@@ -36,11 +43,13 @@ class PhotoGalleryFragment : Fragment(), MenuProvider {
         menuInflater.inflate(R.menu.fragment_photo_gallery, menu)
 
         val searchItem = menu.findItem(R.id.menu_item_search)
-        val searchView = searchItem.actionView as? SearchView
+        searchView = searchItem.actionView as? SearchView
 
         searchView?.setOnQueryTextListener(object: SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 photoGalleryViewModel.setQuery(query ?: "")
+                hideKeyboard()
+                binding.progressbar.visibility = View.VISIBLE
                 return true
             }
 
@@ -53,12 +62,13 @@ class PhotoGalleryFragment : Fragment(), MenuProvider {
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
         return when(menuItem.itemId) {
-            R.id.menu_item_search -> {
+            R.id.menu_item_clear -> {
                 photoGalleryViewModel.setQuery("")
                 true
             } else -> false
         }
     }
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -79,8 +89,10 @@ class PhotoGalleryFragment : Fragment(), MenuProvider {
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                photoGalleryViewModel.galleryItems.collect() {items ->
-                   binding.photoGrid.adapter = PhotoListAdapter(items)
+                photoGalleryViewModel.uiState.collect() {state ->
+                   binding.photoGrid.adapter = PhotoListAdapter(state.images)
+                    binding.progressbar.visibility = View.GONE
+                    searchView?.setQuery(state.query, false)
                 }
             }
         }
@@ -90,5 +102,6 @@ class PhotoGalleryFragment : Fragment(), MenuProvider {
     override fun onDestroy() {
         super.onDestroy()
         _binding = null
+        searchView = null
     }
 }
