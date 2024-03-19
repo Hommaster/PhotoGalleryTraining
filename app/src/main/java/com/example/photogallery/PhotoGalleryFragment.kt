@@ -29,8 +29,10 @@ class PhotoGalleryFragment : Fragment(), MenuProvider {
     private val photoGalleryViewModel: PhotoGalleryViewModel by viewModels()
 
     private var searchView: SearchView? = null
+    private var searchViewBooleanState: Boolean = false
 
     private var _binding : FragmentPhotoGalleryBinding? = null
+    private var searchItem: MenuItem? = null
     private val binding
         get() = checkNotNull(_binding) {
             "Cannot access binding because is it null. It the view visible?"
@@ -42,14 +44,18 @@ class PhotoGalleryFragment : Fragment(), MenuProvider {
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
         menuInflater.inflate(R.menu.fragment_photo_gallery, menu)
 
-        val searchItem = menu.findItem(R.id.menu_item_search)
-        searchView = searchItem.actionView as? SearchView
+        searchItem = menu.findItem(R.id.menu_item_search)
+        searchView = searchItem!!.actionView as? SearchView
 
         searchView?.setOnQueryTextListener(object: SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 photoGalleryViewModel.setQuery(query ?: "")
                 hideKeyboard()
                 binding.progressbar.visibility = View.VISIBLE
+
+                searchViewBooleanState = true
+                searchItem?.isVisible = false
+
                 return true
             }
 
@@ -93,6 +99,9 @@ class PhotoGalleryFragment : Fragment(), MenuProvider {
                    binding.photoGrid.adapter = PhotoListAdapter(state.images)
                     binding.progressbar.visibility = View.GONE
                     searchView?.setQuery(state.query, false)
+                    if(searchViewBooleanState) {
+                        searchItem?.isVisible = true
+                    }
                 }
             }
         }
