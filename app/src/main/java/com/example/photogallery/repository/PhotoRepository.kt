@@ -1,4 +1,4 @@
-package com.example.photogallery
+package com.example.photogallery.repository
 
 import com.example.photogallery.api.FlickrApi
 import com.example.photogallery.api.GalleryItem

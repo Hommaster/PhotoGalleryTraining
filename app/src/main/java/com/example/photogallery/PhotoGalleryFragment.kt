@@ -1,18 +1,21 @@
 package com.example.photogallery
 
-import android.app.ProgressDialog
-import android.content.Context
+import android.annotation.SuppressLint
+import android.app.SearchManager
+import android.database.Cursor
+import android.database.MatrixCursor
 import android.os.Bundle
+import android.provider.BaseColumns
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.InputMethodManager
-import android.widget.ProgressBar
+import android.widget.AutoCompleteTextView
+import android.widget.CursorAdapter
+import androidx.cursoradapter.widget.SimpleCursorAdapter
 import androidx.appcompat.widget.SearchView
-import androidx.core.content.getSystemService
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
@@ -47,24 +50,82 @@ class PhotoGalleryFragment : Fragment(), MenuProvider {
         searchItem = menu.findItem(R.id.menu_item_search)
         searchView = searchItem!!.actionView as? SearchView
 
-        searchView?.setOnQueryTextListener(object: SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                photoGalleryViewModel.setQuery(query ?: "")
-                hideKeyboard()
-                binding.progressbar.visibility = View.VISIBLE
+        searchView?.findViewById<AutoCompleteTextView>(androidx.appcompat.R.id.search_src_text)?.threshold =
+            1
 
+        val from = arrayOf(SearchManager.SUGGEST_COLUMN_TEXT_1)
+        val to = intArrayOf(R.id.item_label)
+        val cursorAdapter = SimpleCursorAdapter(
+            context,
+            R.layout.search_item,
+            null,
+            from,
+            to,
+            CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER
+        )
+
+        searchView?.suggestionsAdapter = cursorAdapter
+
+//        searchView?.setOnQueryTextListener(object: SearchView.OnQueryTextListener {
+//            override fun onQueryTextSubmit(query: String?): Boolean {
+//                photoGalleryViewModel.setQuery(query ?: "")
+//                hideKeyboard()
+//                binding.progressbar.visibility = View.VISIBLE
+//
+//                searchViewBooleanState = true
+//                searchItem?.isVisible = false
+//
+//                return true
+//            }
+//
+//            override fun onQueryTextChange(newText: String?): Boolean {
+//                return false
+//            }
+//        })
+
+        searchView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                hideKeyboard()
+                photoGalleryViewModel.setQuery(query ?: "")
                 searchViewBooleanState = true
                 searchItem?.isVisible = false
-
-                return true
+                binding.progressbar.visibility = View.VISIBLE
+                return false
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                return false
+                val cursor =
+                    MatrixCursor(arrayOf(BaseColumns._ID, SearchManager.SUGGEST_COLUMN_TEXT_1))
+                newText?.let {
+                    photoGalleryViewModel.suggestions.forEachIndexed { index, suggestion ->
+                        if (suggestion.contains(newText, true))
+                            cursor.addRow(arrayOf(index, suggestion))
+                    }
+                }
+                cursorAdapter.changeCursor(cursor)
+                return true
             }
         })
 
+        searchView?.setOnSuggestionListener(object : SearchView.OnSuggestionListener {
+
+            override fun onSuggestionSelect(position: Int): Boolean {
+                return false
+            }
+
+            @SuppressLint("Range")
+            override fun onSuggestionClick(position: Int): Boolean {
+                hideKeyboard()
+                val cursor = searchView!!.suggestionsAdapter.getItem(position) as Cursor
+                val selection =
+                    cursor.getString(cursor.getColumnIndex(SearchManager.SUGGEST_COLUMN_TEXT_1))
+                searchView?.setQuery(selection, false)
+                photoGalleryViewModel.setQuery(selection ?: "")
+                return true
+            }
+        })
     }
+
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
         return when(menuItem.itemId) {

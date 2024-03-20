@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.photogallery.api.GalleryItem
+import com.example.photogallery.repository.PhotoRepository
 import com.example.photogallery.repository.PreferencesRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,6 +25,10 @@ class PhotoGalleryViewModel : ViewModel() {
     val uiState: StateFlow<PhotoGalleryUiState>
         get() = _uiState.asStateFlow()
 
+    private val _suggestions: MutableList<String> = mutableListOf()
+    val suggestions
+        get() = _suggestions
+
     init {
         viewModelScope.launch {
             preferencesRepository.storedQuery.collectLatest { storedQuery ->
@@ -34,6 +39,9 @@ class PhotoGalleryViewModel : ViewModel() {
                             images = items,
                             query = storedQuery
                         )
+                    }
+                    if(_suggestions.find { it == storedQuery } == null) {
+                        _suggestions.add(storedQuery)
                     }
                 } catch (ex:Exception) {
                     Log.e("PGViewModel", "Failed loading", ex)

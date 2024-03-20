@@ -65,6 +65,8 @@ dependencies {
     implementation(libs.moshi)
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
+    implementation(libs.androidx.room.common)
+    implementation(libs.androidx.room.ktx)
     ksp(libs.moshi.kotlin.codegen)
     implementation(libs.converter.moshi)
 
