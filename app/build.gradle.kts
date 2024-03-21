@@ -79,6 +79,9 @@ dependencies {
     // datastore for simple persistence
     implementation(libs.datastore)
 
+    // implementation for work-er
+    implementation(libs.work.runtime.ktx)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
