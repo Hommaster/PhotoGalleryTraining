@@ -1,9 +1,18 @@
 package com.example.photogallery
 
+import android.Manifest
+import android.app.PendingIntent
 import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
 import android.util.Log
+import androidx.activity.result.ActivityResultLauncher
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.example.photogallery.constance.Constance
 import com.example.photogallery.repository.PhotoRepository
 import com.example.photogallery.repository.PreferencesRepository
 import kotlinx.coroutines.flow.first
@@ -12,6 +21,7 @@ class PollWorker(
     private val context: Context,
     workerParameters: WorkerParameters
 ) : CoroutineWorker(context, workerParameters) {
+
     override suspend fun doWork(): Result {
 
         val preferencesRepository = PreferencesRepository.get()
@@ -34,6 +44,7 @@ class PollWorker(
                     Log.i("PollWorker", "Still have the same result: $newResultId")
                 } else {
                     Log.i("PollWorker", "Got a new result: $newResultId")
+                    notifyUser()
                     preferencesRepository.setLastResultId(newResultId)
                 }
             }
@@ -43,5 +54,33 @@ class PollWorker(
             Log.i("PollWorker", "Background update failed", ex)
             Result.failure()
         }
+    }
+
+    private fun notifyUser() {
+
+        val intent = MainActivity.newIntent(context)
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            0,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val resources = context.resources
+
+        val notification = NotificationCompat
+            .Builder(context, Constance.NOTIFICATION_CHANNEL_ID)
+            .setTicker(resources.getString(R.string.new_pictures_title))
+            .setSmallIcon(android.R.drawable.ic_menu_report_image)
+            .setContentTitle(resources.getString(R.string.new_pictures_title))
+            .setContentText(resources.getString(R.string.new_pictures_text))
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+            .build()
+
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+            NotificationManagerCompat.from(context).notify(0, notification)
+        }
+
     }
 }
