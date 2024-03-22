@@ -78,7 +78,13 @@ class PollWorker(
             .setAutoCancel(true)
             .build()
 
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+
+        // in sdk_version Tiramisu and older need to request permission for POST_NOTIFICATIONS
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+                NotificationManagerCompat.from(context).notify(0, notification)
+            }
+        } else {
             NotificationManagerCompat.from(context).notify(0, notification)
         }
 
