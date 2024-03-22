@@ -1,9 +1,12 @@
 package com.example.photogallery
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.SearchManager
+import android.content.pm.PackageManager
 import android.database.Cursor
 import android.database.MatrixCursor
+import android.os.Build
 import android.os.Bundle
 import android.provider.BaseColumns
 import android.view.LayoutInflater
@@ -14,8 +17,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AutoCompleteTextView
 import android.widget.CursorAdapter
+import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.cursoradapter.widget.SimpleCursorAdapter
 import androidx.appcompat.widget.SearchView
+import androidx.core.content.ContextCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
@@ -33,6 +40,8 @@ import com.example.photogallery.databinding.FragmentPhotoGalleryBinding
 import kotlinx.coroutines.launch
 
 class PhotoGalleryFragment : Fragment(), MenuProvider {
+
+    private lateinit var permissionLauncher: ActivityResultLauncher<String>
 
     private val photoGalleryViewModel: PhotoGalleryViewModel by viewModels()
 
@@ -127,6 +136,9 @@ class PhotoGalleryFragment : Fragment(), MenuProvider {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        registerPermissionListener()
+        checkPermissionPostNotification()
+
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.UNMETERED)
             .build()
@@ -161,6 +173,7 @@ class PhotoGalleryFragment : Fragment(), MenuProvider {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 photoGalleryViewModel.uiState.collect() {state ->
                    binding.photoGrid.adapter = PhotoListAdapter(state.images)
+                    checkPermissionPostNotification()
                     binding.progressbar.visibility = View.GONE
                     searchView?.setQuery(state.query, false)
                     if(searchViewBooleanState) {
@@ -176,5 +189,23 @@ class PhotoGalleryFragment : Fragment(), MenuProvider {
         super.onDestroy()
         _binding = null
         searchView = null
+    }
+
+    private fun checkPermissionPostNotification() {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.POST_NOTIFICATIONS)
+            != PackageManager.PERMISSION_GRANTED) {
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
+    private fun registerPermissionListener() {
+        permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+            if(it) {
+                Toast.makeText(requireContext(), "Permission is good", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(requireContext(), "", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 }
