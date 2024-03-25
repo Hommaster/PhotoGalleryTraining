@@ -15,7 +15,7 @@ class PhotoViewHolder(
     fun bind(galleryItem: GalleryItem) {
         binding.itemImageView.load(galleryItem.uri) {
             // While waiting for the image to load, a standard image is inserted
-            placeholder(R.drawable.modal_generated_image__5_)
+            placeholder(R.drawable.zkzg)
         }
     }
 }
