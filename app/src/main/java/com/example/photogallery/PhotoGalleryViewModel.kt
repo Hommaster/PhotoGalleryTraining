@@ -49,7 +49,7 @@ class PhotoGalleryViewModel : ViewModel() {
             }
         }
         viewModelScope.launch {
-            preferencesRepository.isPolling.collect { isPolling ->
+            preferencesRepository.isPolling.collect {isPolling ->
                 _uiState.update { it.copy(isPolling = isPolling) }
             }
         }

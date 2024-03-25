@@ -41,7 +41,6 @@ class PreferencesRepository (
     val isPolling: Flow<Boolean> = dataStore.data.map {
         it[PREF_IS_POLLING] ?: false
     }.distinctUntilChanged()
-
     suspend fun setPolling(isPolling: Boolean) {
         dataStore.edit {
             it[PREF_IS_POLLING] = isPolling

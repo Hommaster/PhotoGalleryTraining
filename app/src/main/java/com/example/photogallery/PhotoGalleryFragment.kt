@@ -9,6 +9,7 @@ import android.database.MatrixCursor
 import android.os.Build
 import android.os.Bundle
 import android.provider.BaseColumns
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -32,12 +33,14 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
-import androidx.work.OneTimeWorkRequest
-import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import com.example.photogallery.constance.Constance
 import com.example.photogallery.databinding.FragmentPhotoGalleryBinding
 import kotlinx.coroutines.launch
+import java.util.concurrent.TimeUnit
 
 class PhotoGalleryFragment : Fragment(), MenuProvider {
 
@@ -47,6 +50,9 @@ class PhotoGalleryFragment : Fragment(), MenuProvider {
 
     private var searchView: SearchView? = null
     private var searchViewBooleanState: Boolean = false
+
+    private var pollingMenuItem: MenuItem? = null
+    private var itemStatusMenuPolling: Boolean = false
 
     private var _binding : FragmentPhotoGalleryBinding? = null
     private var searchItem: MenuItem? = null
@@ -61,11 +67,18 @@ class PhotoGalleryFragment : Fragment(), MenuProvider {
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
         menuInflater.inflate(R.menu.fragment_photo_gallery, menu)
 
+        pollingMenuItem = menu.findItem(R.id.menu_item_toggle_polling)
+        val toggleTitle = if (searchViewBooleanState) {
+            R.string.start_polling
+        } else {
+            R.string.stop_polling
+        }
+        pollingMenuItem?.setTitle(toggleTitle)
+
         searchItem = menu.findItem(R.id.menu_item_search)
         searchView = searchItem!!.actionView as? SearchView
 
-        searchView?.findViewById<AutoCompleteTextView>(androidx.appcompat.R.id.search_src_text)?.threshold =
-            1
+        searchView?.findViewById<AutoCompleteTextView>(androidx.appcompat.R.id.search_src_text)?.threshold = 1
 
         val from = arrayOf(SearchManager.SUGGEST_COLUMN_TEXT_1)
         val to = intArrayOf(R.id.item_label)
@@ -129,7 +142,12 @@ class PhotoGalleryFragment : Fragment(), MenuProvider {
             R.id.menu_item_clear -> {
                 photoGalleryViewModel.setQuery("")
                 true
-            } else -> false
+            }
+            R.id.menu_item_toggle_polling -> {
+                photoGalleryViewModel.toggleIsPolling()
+                true
+            }
+            else -> false
         }
     }
 
@@ -138,17 +156,6 @@ class PhotoGalleryFragment : Fragment(), MenuProvider {
 
         registerPermissionListener()
         checkPermissionPostNotification()
-
-        val constraints = Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.UNMETERED)
-            .build()
-
-        val workRequest = OneTimeWorkRequest
-            .Builder(PollWorker::class.java)
-            .setConstraints(constraints)
-            .build()
-        WorkManager.getInstance(requireContext())
-            .enqueue(workRequest)
     }
 
 
@@ -173,6 +180,8 @@ class PhotoGalleryFragment : Fragment(), MenuProvider {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 photoGalleryViewModel.uiState.collect() {state ->
                    binding.photoGrid.adapter = PhotoListAdapter(state.images)
+                    updatePollingState(state.isPolling)
+                    itemStatusMenuPolling = state.isPolling
                     checkPermissionPostNotification()
                     binding.progressbar.visibility = View.GONE
                     searchView?.setQuery(state.query, false)
@@ -183,6 +192,33 @@ class PhotoGalleryFragment : Fragment(), MenuProvider {
             }
         }
 
+    }
+
+    private fun updatePollingState(isPolling: Boolean) {
+        Log.i("Update", "$isPolling")
+        val toggleItemTitle = if(isPolling) {
+            R.string.stop_polling
+        } else {
+            R.string.start_polling
+        }
+        pollingMenuItem?.setTitle(toggleItemTitle)
+
+        if (isPolling) {
+            Log.i("Update2", "$isPolling")
+            val constraints = Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.UNMETERED)
+                .build()
+            val periodicRequest = PeriodicWorkRequestBuilder<PollWorker>(15, TimeUnit.MINUTES)
+                .setConstraints(constraints)
+                .build()
+            WorkManager.getInstance(requireContext()).enqueueUniquePeriodicWork(
+                Constance.POLL_WORK,
+                ExistingPeriodicWorkPolicy.KEEP,
+                periodicRequest
+            )
+        } else {
+            WorkManager.getInstance(requireContext()).cancelUniqueWork(Constance.POLL_WORK)
+        }
     }
 
     override fun onDestroy() {
