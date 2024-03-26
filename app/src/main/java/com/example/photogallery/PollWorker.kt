@@ -24,8 +24,6 @@ class PollWorker(
 
     override suspend fun doWork(): Result {
 
-        notifyUser()
-
         val preferencesRepository = PreferencesRepository.get()
         val photoRepository = PhotoRepository()
 
@@ -42,10 +40,8 @@ class PollWorker(
 
             if (items.isNotEmpty()) {
                 val newResultId = items.first().id
-                if (newResultId == lastId) {
-                    Log.i("PollWorker", "Still have the same result: $newResultId")
-                } else {
-                    Log.i("PollWorker", "Got a new result: $newResultId")
+                if (newResultId != lastId) {
+                    notifyUser()
                     preferencesRepository.setLastResultId(newResultId)
                 }
             }
