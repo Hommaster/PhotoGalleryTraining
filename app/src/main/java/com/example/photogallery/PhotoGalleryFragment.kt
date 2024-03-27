@@ -3,6 +3,7 @@ package com.example.photogallery
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.SearchManager
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.database.Cursor
 import android.database.MatrixCursor
@@ -31,6 +32,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
@@ -179,7 +181,13 @@ class PhotoGalleryFragment : Fragment(), MenuProvider {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 photoGalleryViewModel.uiState.collect() {state ->
-                   binding.photoGrid.adapter = PhotoListAdapter(state.images)
+                   binding.photoGrid.adapter = PhotoListAdapter(state.images) {photoPageUri ->
+                       findNavController().navigate(
+                           PhotoGalleryFragmentDirections.showPhoto(
+                               photoPageUri
+                           )
+                       )
+                   }
                     updatePollingState(state.isPolling)
                     itemStatusMenuPolling = state.isPolling
                     checkPermissionPostNotification()

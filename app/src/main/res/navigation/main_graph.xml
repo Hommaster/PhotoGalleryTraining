@@ -7,5 +7,28 @@
     <fragment
         android:id="@+id/photoGalleryFragment"
         android:name="com.example.photogallery.PhotoGalleryFragment"
-        android:label="PhotoGalleryFragment" />
+        android:label="PhotoGalleryFragment" >
+        <action
+            android:id="@+id/show_photo"
+            app:destination="@id/photoPageFragment" />
+        <action
+            android:id="@+id/action_photoGalleryFragment_to_pictureDialogFragment"
+            app:destination="@id/pictureDialogFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/photoPageFragment"
+        android:name="com.example.photogallery.PhotoPageFragment"
+        android:label="PhotoPageFragment" >
+        <argument
+            android:name="photoPageUri"
+            app:argType="android.net.Uri" />
+    </fragment>
+    <dialog
+        android:id="@+id/pictureDialogFragment"
+        android:name="com.example.photogallery.PictureDialogFragment"
+        android:label="PictureDialogFragment" >
+        <argument
+            android:name="photoPageUriDialog"
+            app:argType="android.net.Uri" />
+    </dialog>
 </navigation>

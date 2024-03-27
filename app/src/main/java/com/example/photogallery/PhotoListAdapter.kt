@@ -1,5 +1,6 @@
 package com.example.photogallery
 
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
@@ -12,16 +13,19 @@ import com.example.photogallery.databinding.ListItemGalleryBinding
 class PhotoViewHolder(
     private val binding: ListItemGalleryBinding
 ): RecyclerView.ViewHolder(binding.root) {
-    fun bind(galleryItem: GalleryItem) {
+    fun bind(galleryItem: GalleryItem,
+             onItemClicked: (Uri) -> Unit) {
         binding.itemImageView.load(galleryItem.uri) {
             // While waiting for the image to load, a standard image is inserted
             placeholder(R.drawable.zkzg)
         }
+        binding.root.setOnClickListener { onItemClicked(galleryItem.photoPageUri) }
     }
 }
 
 class PhotoListAdapter(
-    private val galleryItems: List<GalleryItem>
+    private val galleryItems: List<GalleryItem>,
+    private val onItemClicked: (Uri) -> Unit
 ): ListAdapter<GalleryItem, PhotoViewHolder>(DiffCallback()) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PhotoViewHolder {
         val inflate = LayoutInflater.from(parent.context)
@@ -31,7 +35,7 @@ class PhotoListAdapter(
 
     override fun onBindViewHolder(holder: PhotoViewHolder, position: Int) {
         val item = galleryItems[position]
-        holder.bind(item)
+        holder.bind(item, onItemClicked)
     }
 
     override fun getItemCount() = galleryItems.size

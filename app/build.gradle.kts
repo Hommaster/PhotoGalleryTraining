@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
     alias(libs.plugins.googleDevtoolsKsp)
+    alias(libs.plugins.navigationSafeargsKotlin)
 }
 
 android {
@@ -81,6 +82,12 @@ dependencies {
 
     // implementation for work-er
     implementation(libs.work.runtime.ktx)
+
+    // implementation for navigation
+    implementation(libs.navigation.fragment.ktx)
+    implementation(libs.navigation.ui.ktx)
+
+    implementation(libs.androidx.webkit)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
