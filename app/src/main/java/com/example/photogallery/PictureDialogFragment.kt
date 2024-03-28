@@ -5,18 +5,14 @@ import android.app.Dialog
 import android.os.Bundle
 import android.widget.ImageView
 import androidx.fragment.app.DialogFragment
+import androidx.navigation.fragment.navArgs
 import coil.load
 import com.example.photogallery.databinding.FragmentPhotoGalleryBinding
 import com.example.photogallery.databinding.ImageDetailDialogBinding
 
 class PictureDialogFragment: DialogFragment() {
 
-    private var _binding : ImageDetailDialogBinding? = null
-
-    private val binding
-        get() = checkNotNull(_binding) {
-            "Cannot access binding because is it null. It the view visible?"
-        }
+    private val args : PictureDialogFragmentArgs by navArgs()
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return activity?.let {
@@ -28,8 +24,15 @@ class PictureDialogFragment: DialogFragment() {
 
             builder.setView(view)
 
-//            binding.photoFromGallery.load()
+            val photoFromGallery = view.findViewById<ImageView>(R.id.photo_from_gallery)
 
+            photoFromGallery.load(args.photoPageUriDialog) {
+                placeholder(R.drawable.zkzg)
+            }
+            builder.apply {
+                setTitle(R.string.dialog_title_image)
+                setNegativeButton(R.string.dialog_negative_button) {_, _ -> dialog?.cancel()}
+            }
             builder.create()
         } ?: throw IllegalStateException("Activity cannot be null")
     }

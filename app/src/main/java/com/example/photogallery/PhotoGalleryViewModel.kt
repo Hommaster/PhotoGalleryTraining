@@ -53,6 +53,11 @@ class PhotoGalleryViewModel : ViewModel() {
                 _uiState.update { it.copy(isPolling = isPolling) }
             }
         }
+        viewModelScope.launch {
+            preferencesRepository.isWebView.collect { isWebView ->
+                _uiState.update { it.copy(isWebView = isWebView) }
+            }
+        }
     }
 
     fun setQuery(query: String) {
@@ -64,6 +69,12 @@ class PhotoGalleryViewModel : ViewModel() {
     fun toggleIsPolling() {
         viewModelScope.launch {
             preferencesRepository.setPolling(!uiState.value.isPolling)
+        }
+    }
+
+    fun webViewIsInactive() {
+        viewModelScope.launch {
+            preferencesRepository.setWebView(!uiState.value.isWebView)
         }
     }
 
@@ -82,4 +93,5 @@ data class PhotoGalleryUiState(
     val images: List<GalleryItem> = listOf(),
     val query: String = "",
     val isPolling: Boolean = false,
+    val isWebView: Boolean = true,
 )

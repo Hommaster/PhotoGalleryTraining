@@ -9,4 +9,13 @@
 
     <string name="stop_polling">Stop polling</string>
     <string name="start_polling">Start polling</string>
+
+    <string name="stop_web_view">Stop WebView</string>
+    <string name="start_web_view">Start WebView</string>
+
+    <string name="dialog_title_image">IMAGE</string>
+    <string name="dialog_negative_button">Return</string>
+
+    <string name="web_view_button_next">Next</string>
+    <string name="web_view_button_back">Back</string>
 </resources>

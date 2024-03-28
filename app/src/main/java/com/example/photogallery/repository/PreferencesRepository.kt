@@ -47,6 +47,17 @@ class PreferencesRepository (
         }
     }
 
+    //checking about web view
+    val isWebView: Flow<Boolean> = dataStore.data.map {
+        it[PREF_IS_WEB_VIEW] ?: false
+    }.distinctUntilChanged()
+
+    suspend fun setWebView(isWebView: Boolean) {
+        dataStore.edit {
+            it[PREF_IS_WEB_VIEW] = isWebView
+        }
+    }
+
     companion object {
         private val SEARCH_QUERY_KEY = stringPreferencesKey("search_query")
 
@@ -54,6 +65,9 @@ class PreferencesRepository (
 
         //key for polling
         private val PREF_IS_POLLING = booleanPreferencesKey("isPolling")
+
+        //key for webView
+        private val PREF_IS_WEB_VIEW = booleanPreferencesKey("isWebView")
 
         private var INSTANCE : PreferencesRepository? = null
 

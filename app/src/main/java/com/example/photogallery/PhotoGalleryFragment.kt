@@ -51,9 +51,12 @@ class PhotoGalleryFragment : Fragment(), MenuProvider {
     private val photoGalleryViewModel: PhotoGalleryViewModel by viewModels()
 
     private var searchView: SearchView? = null
+
     private var searchViewBooleanState: Boolean = false
+    private var webViewBooleanState: Boolean = false
 
     private var pollingMenuItem: MenuItem? = null
+    private var inclusionWebViewMenuItem: MenuItem? = null
     private var itemStatusMenuPolling: Boolean = false
 
     private var _binding : FragmentPhotoGalleryBinding? = null
@@ -76,6 +79,14 @@ class PhotoGalleryFragment : Fragment(), MenuProvider {
             R.string.stop_polling
         }
         pollingMenuItem?.setTitle(toggleTitle)
+
+        inclusionWebViewMenuItem = menu.findItem(R.id.menu_item_web_view)
+        val webViewTitle = if (webViewBooleanState) {
+            R.string.stop_web_view
+        } else {
+            R.string.start_web_view
+        }
+        inclusionWebViewMenuItem?.setTitle(webViewTitle)
 
         searchItem = menu.findItem(R.id.menu_item_search)
         searchView = searchItem!!.actionView as? SearchView
@@ -149,6 +160,10 @@ class PhotoGalleryFragment : Fragment(), MenuProvider {
                 photoGalleryViewModel.toggleIsPolling()
                 true
             }
+            R.id.menu_item_web_view -> {
+                photoGalleryViewModel.webViewIsInactive()
+                true
+            }
             else -> false
         }
     }
@@ -181,15 +196,25 @@ class PhotoGalleryFragment : Fragment(), MenuProvider {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 photoGalleryViewModel.uiState.collect() {state ->
-                   binding.photoGrid.adapter = PhotoListAdapter(state.images) {photoPageUri ->
+                   binding.photoGrid.adapter = PhotoListAdapter(state.images, state.isWebView, { photoPageUri ->
+                       if (state.isWebView)
                        findNavController().navigate(
                            PhotoGalleryFragmentDirections.showPhoto(
                                photoPageUri
                            )
                        )
+                   }) { photoUri ->
+                       if (!state.isWebView)
+                       findNavController().navigate(
+                           PhotoGalleryFragmentDirections.showDialogPhoto(
+                               photoUri
+                           )
+                       )
                    }
                     updatePollingState(state.isPolling)
+                    updateWebView(state.isWebView)
                     itemStatusMenuPolling = state.isPolling
+                    webViewBooleanState = state.isWebView
                     checkPermissionPostNotification()
                     binding.progressbar.visibility = View.GONE
                     searchView?.setQuery(state.query, false)
@@ -203,7 +228,6 @@ class PhotoGalleryFragment : Fragment(), MenuProvider {
     }
 
     private fun updatePollingState(isPolling: Boolean) {
-        Log.i("Update", "$isPolling")
         val toggleItemTitle = if(isPolling) {
             R.string.stop_polling
         } else {
@@ -212,7 +236,6 @@ class PhotoGalleryFragment : Fragment(), MenuProvider {
         pollingMenuItem?.setTitle(toggleItemTitle)
 
         if (isPolling) {
-            Log.i("Update2", "$isPolling")
             val constraints = Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.UNMETERED)
                 .build()
@@ -227,6 +250,15 @@ class PhotoGalleryFragment : Fragment(), MenuProvider {
         } else {
             WorkManager.getInstance(requireContext()).cancelUniqueWork(Constance.POLL_WORK)
         }
+    }
+
+    private fun updateWebView(isWebView: Boolean) {
+        val webViewTitle = if (isWebView) {
+            R.string.stop_web_view
+        } else {
+            R.string.start_web_view
+        }
+        inclusionWebViewMenuItem?.setTitle(webViewTitle)
     }
 
     override fun onDestroy() {

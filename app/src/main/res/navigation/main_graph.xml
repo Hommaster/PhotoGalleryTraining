@@ -12,7 +12,7 @@
             android:id="@+id/show_photo"
             app:destination="@id/photoPageFragment" />
         <action
-            android:id="@+id/action_photoGalleryFragment_to_pictureDialogFragment"
+            android:id="@+id/show_dialog_photo"
             app:destination="@id/pictureDialogFragment" />
     </fragment>
     <fragment
@@ -29,6 +29,6 @@
         android:label="PictureDialogFragment" >
         <argument
             android:name="photoPageUriDialog"
-            app:argType="android.net.Uri" />
+            app:argType="string" />
     </dialog>
 </navigation>

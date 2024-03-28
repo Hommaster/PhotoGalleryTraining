@@ -14,18 +14,27 @@ class PhotoViewHolder(
     private val binding: ListItemGalleryBinding
 ): RecyclerView.ViewHolder(binding.root) {
     fun bind(galleryItem: GalleryItem,
-             onItemClicked: (Uri) -> Unit) {
+             isWebView: Boolean,
+             onItemClicked: (Uri) -> Unit,
+             onPhotoClicked: (String) -> Unit) {
         binding.itemImageView.load(galleryItem.uri) {
             // While waiting for the image to load, a standard image is inserted
             placeholder(R.drawable.zkzg)
         }
-        binding.root.setOnClickListener { onItemClicked(galleryItem.photoPageUri) }
+        binding.root.setOnClickListener { if(isWebView) {
+            onItemClicked(galleryItem.photoPageUri)
+        } else {
+            onPhotoClicked(galleryItem.uri)
+        }
+        }
     }
 }
 
 class PhotoListAdapter(
     private val galleryItems: List<GalleryItem>,
-    private val onItemClicked: (Uri) -> Unit
+    private val isWebView: Boolean,
+    private val onItemClicked: (Uri) -> Unit,
+    private val onPhotoClicked: (String) -> Unit
 ): ListAdapter<GalleryItem, PhotoViewHolder>(DiffCallback()) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PhotoViewHolder {
         val inflate = LayoutInflater.from(parent.context)
@@ -35,7 +44,7 @@ class PhotoListAdapter(
 
     override fun onBindViewHolder(holder: PhotoViewHolder, position: Int) {
         val item = galleryItems[position]
-        holder.bind(item, onItemClicked)
+        holder.bind(item, isWebView, onItemClicked, onPhotoClicked)
     }
 
     override fun getItemCount() = galleryItems.size
