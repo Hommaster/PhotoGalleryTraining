@@ -52,11 +52,8 @@ class PhotoPageFragment: Fragment() {
                 }
             }
             buttonNext.setOnClickListener {
-                if(webView.canGoForward()) {
+                if(webView.canGoForward())
                     webView.goForward()
-                } else {
-                    buttonNext.isEnabled = false
-                }
             }
             buttonBack.setOnClickListener {
                 if(webView.canGoBack()) {
@@ -68,5 +65,11 @@ class PhotoPageFragment: Fragment() {
             }
             return binding.root
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        val parent = requireActivity() as AppCompatActivity
+        parent.supportActionBar?.subtitle = null
     }
 }
